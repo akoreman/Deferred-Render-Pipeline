@@ -4,3 +4,5 @@ Working on a deferred render pipeline using Unity3D's scriptable render pipeline
 
 # Screenshots
 
+**Normals buffer**  
+<img src="https://raw.github.com/akoreman/Deferred-Render-Pipeline/main/images/GBufferNormals.png" width="400">  
