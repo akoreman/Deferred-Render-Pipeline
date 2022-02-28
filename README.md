@@ -2,6 +2,10 @@
 
 Working on a deferred render pipeline using Unity3D's scriptable render pipeline, sharing some code with https://github.com/akoreman/Forward-Render-Pipeline.
 
+**Currently Implemented**
+- Using MRT to render the buffers using a single geometry pass.
+- Sampling from these buffers to calculate diffuse shading from directional lights.
+
 # Screenshots
 
 **Normals buffer**  
