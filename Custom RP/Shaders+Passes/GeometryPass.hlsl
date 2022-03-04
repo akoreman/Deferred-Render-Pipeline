@@ -1,5 +1,5 @@
-#ifndef CUSTOM_NORMALS_PASS_INCLUDED
-#define CUSTOM_NORMALS_PASS_INCLUDED
+#ifndef CUSTOM_GEOMETRY_PASS_INCLUDED
+#define CUSTOM_GEOMETRY_PASS_INCLUDED
 
 #include "../Auxiliary/Common.hlsl"
 
@@ -28,22 +28,24 @@ struct vertexInput
 struct vertexOutput
 {
     float4 positionClipSpace : SV_POSITION;
+    float3 positionWorldSpace : VAR_POSITION;
     float3 normalWorldSpace : VAR_NORMAL;
     float2 coordsUV : TEXCOORD0;
     float4 tangentWorldSpace : VAR_TANGENT;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
+// Output struct for the fragment shader using the 3 different render targets.
 struct fragmentOutput
 {
-    float4 normalBuffer : SV_TARGET1;
-    float4 albedoBuffer : SV_TARGET0;
+    float4 normalBuffer : SV_TARGET0;
+    float4 albedoBuffer : SV_TARGET1;
+    float4 worldPositionBuffer : SV_TARGET2;
 };
 
 float3 GetNormalTS(float2 coordsUV)
 {
     float4 map = SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, coordsUV);
-    //float scale = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NormalScale);
     float3 normal = DecodeNormal(map, 1.0);
     
     return normal;
@@ -63,12 +65,14 @@ vertexOutput NormalsPassVertex(vertexInput input)
     output.normalWorldSpace = TransformObjectToWorldNormal(input.normalObjectSpace);
     output.coordsUV = input.coordsUV;
     
+    output.positionWorldSpace = positionWorldSpace;
+    
     output.tangentWorldSpace = float4(TransformObjectToWorldDir(input.tangentObjectSpace.xyz), input.tangentObjectSpace.w);
     
     return output;
 }
 
-fragmentOutput NormalsPassFragment(vertexOutput input) : SV_TARGET
+fragmentOutput NormalsPassFragment(vertexOutput input) 
 {
     fragmentOutput output;
     
@@ -82,6 +86,7 @@ fragmentOutput NormalsPassFragment(vertexOutput input) : SV_TARGET
     
     output.albedoBuffer = textureSampleColor * baseColor;
     
+    output.worldPositionBuffer = float4(input.positionWorldSpace, 1.0);
      
     return output;
 }

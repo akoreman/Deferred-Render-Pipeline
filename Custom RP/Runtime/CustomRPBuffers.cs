@@ -2,18 +2,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using Unity.Collections;
 
-[System.Serializable]
-public class BufferSettings
-{
-    [Min(0.001f)]
-    public float maxDistance = 100f;
+// Class to setup the MRT and setup and render to the appropriate targets.
 
-    [Range(0.001f, 1f)]
-    public float distanceFade = 0.1f;
-
-}
-
-public class NormalBuffer
+public class GeometryBuffer
 {
     const string bufferName = "NormalBuffer";
 
@@ -23,14 +14,15 @@ public class NormalBuffer
 
     CommandBuffer buffer = new CommandBuffer { name = bufferName };
 
+    // Setup IDs for the appropriate render targets.
     static int normalBufferId = Shader.PropertyToID("_NormalBuffer");
     static int albedoBufferId = Shader.PropertyToID("_AlbedoBuffer");
-    //static int depthBufferId = Shader.PropertyToID("_DepthBuffer");
+    static int worldPositionBufferId = Shader.PropertyToID("_worldPositionBuffer");
 
     static ShaderTagId geometryShaderTagId = new ShaderTagId("Geometry");
 
-    static RenderTargetIdentifier[] mrt = new RenderTargetIdentifier[2];
-
+    // Create the array of RT IDs to send to the GPU as the MRTs.
+    static RenderTargetIdentifier[] mrt = new RenderTargetIdentifier[3];
 
     public void Setup(ScriptableRenderContext context, CullingResults cullingResults, Camera camera)
     {
@@ -57,18 +49,39 @@ public class NormalBuffer
 
         ExecuteBuffer();
 
-        buffer.GetTemporaryRT(normalBufferId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, RenderTextureFormat.ARGBFloat);
-        mrt[0] = new RenderTargetIdentifier(normalBufferId);
+        // Create the render targets, create the IDs and throw them together in an array.
+        buffer.GetTemporaryRT(normalBufferId, camera.pixelWidth, camera.pixelHeight, 24, FilterMode.Point, RenderTextureFormat.ARGBFloat);
+        ExecuteBuffer();
 
-        buffer.GetTemporaryRT(albedoBufferId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, RenderTextureFormat.ARGBFloat);
-        mrt[1] = new RenderTargetIdentifier(albedoBufferId);
+        RenderTargetIdentifier hormalBufferID = new RenderTargetIdentifier(normalBufferId);
+        ExecuteBuffer();
 
-        //buffer.SetRenderTarget(normalBufferId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-        buffer.SetRenderTarget(mrt, 32);
+
+        buffer.GetTemporaryRT(albedoBufferId, camera.pixelWidth, camera.pixelHeight, 24, FilterMode.Point, RenderTextureFormat.ARGBFloat);
+        ExecuteBuffer();
+
+        RenderTargetIdentifier albedoBufferID = new RenderTargetIdentifier(albedoBufferId);
+        ExecuteBuffer();
+
+        buffer.GetTemporaryRT(worldPositionBufferId, camera.pixelWidth, camera.pixelHeight, 24, FilterMode.Point, RenderTextureFormat.ARGBFloat);
+        ExecuteBuffer();
+
+        RenderTargetIdentifier worldPositionBufferID = new RenderTargetIdentifier(worldPositionBufferId);
+        ExecuteBuffer();
+
+        mrt[0] = normalBufferId;
+        mrt[1] = albedoBufferId;
+        mrt[2] = worldPositionBufferID;
+
+        ExecuteBuffer();
+
+        // Create a render texture to use a the depth buffer.
+        var depthBuffer = RenderTexture.GetTemporary(camera.pixelWidth, camera.pixelHeight, 24);
+
+        buffer.SetRenderTarget(mrt, depthBuffer);
         ExecuteBuffer();
 
         buffer.ClearRenderTarget(true, false, Color.clear);
-
         ExecuteBuffer();
 
         SortingSettings sortingSettings = new SortingSettings(camera);
@@ -82,81 +95,9 @@ public class NormalBuffer
     }
 
 
-
     public void Cleanup()
     {
         ExecuteBuffer();
     }
-
-
-
-}
-
-public class AlbedoBuffer
-{
-    const string bufferName = "AlbedoBuffer";
-
-    ScriptableRenderContext context;
-    Camera camera;
-    CullingResults cullingResults;
-
-    CommandBuffer buffer = new CommandBuffer { name = bufferName };
-
-    static int albedoBufferId = Shader.PropertyToID("_AlbedoBuffer");
-    static ShaderTagId albedoShaderTagId = new ShaderTagId("Albedo");
-
-    public void Setup(ScriptableRenderContext context, CullingResults cullingResults, Camera camera)
-    {
-        this.context = context;
-        this.cullingResults = cullingResults;
-        this.camera = camera;
-
-        ExecuteBuffer();
-
-        Render();
-        Cleanup();
-    }
-
-    void ExecuteBuffer()
-    {
-        context.ExecuteCommandBuffer(buffer);
-        buffer.Clear();
-    }
-
-
-    public void Render()
-    {
-        context.SetupCameraProperties(camera);
-        buffer.ClearRenderTarget(true, true, Color.clear);
-
-        ExecuteBuffer();
-
-        buffer.GetTemporaryRT(albedoBufferId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, RenderTextureFormat.ARGBFloat);
-        buffer.SetRenderTarget(albedoBufferId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-
-        ExecuteBuffer();
-
-        buffer.ClearRenderTarget(true, false, Color.clear);
-
-        ExecuteBuffer();
-
-        
-
-        SortingSettings sortingSettings = new SortingSettings(camera);
-        DrawingSettings drawingSettings = new DrawingSettings(albedoShaderTagId, sortingSettings);
-        FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.all);
-
-        context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
-
-        ExecuteBuffer();
-        context.Submit();
-    }
-
-
-    public void Cleanup()
-    {
-        ExecuteBuffer();
-    }
-
 
 }

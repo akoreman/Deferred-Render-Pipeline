@@ -6,7 +6,7 @@ using Unity.Collections;
 public class CustomRP : RenderPipeline
 {
     CamRenderer renderer = new CamRenderer();
-    ShadowSettings shadowSettings;
+
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
@@ -28,12 +28,9 @@ public class CamRenderer
     ScriptableRenderContext context;
     Camera camera;
     CullingResults cullingResults;
-    //Lighting lighting = new Lighting();
 
-    NormalBuffer normalBuffer = new NormalBuffer();
-    AlbedoBuffer albedoBuffer = new AlbedoBuffer();
+    GeometryBuffer geometryBuffer = new GeometryBuffer();
 
-    static ShaderTagId unlitShaderTagId = new ShaderTagId("Unlit");
     static ShaderTagId litShaderTagId = new ShaderTagId("Lit");
 
     const string bufferName = "Render Camera";
@@ -44,6 +41,7 @@ public class CamRenderer
         this.context = context;
         this.camera = camera;
 
+        // If there are no vertices within the culling volume, stop the rendering process.
         if (!Cull())
             return;
 
@@ -56,7 +54,6 @@ public class CamRenderer
         buffer.EndSample(bufferName);
 
         Setup();     
-        //ExecuteBuffer();
 
         buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
 
@@ -76,8 +73,7 @@ public class CamRenderer
 
     void DrawBuffers()
     {
-        normalBuffer.Setup(context, cullingResults, camera);
-        //albedoBuffer.Setup(context, cullingResults, camera);
+        geometryBuffer.Setup(context, cullingResults, camera);
     }
 
     void DrawGeometry()
