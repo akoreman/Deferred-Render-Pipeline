@@ -6,6 +6,14 @@
 TEXTURE2D(_NormalMap);
 SAMPLER(sampler_NormalMap);
 
+TEXTURE2D(_Texture);
+SAMPLER(sampler_Texture);
+
+// Unity buffer to keep track of per material properties.
+UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
 // Input struct for the vertex shader.
 struct vertexInput
 {
@@ -13,6 +21,7 @@ struct vertexInput
     float3 normalObjectSpace : NORMAL;
     float2 coordsUV : TEXCOORD0;
     float4 tangentObjectSpace : TANGENT;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 // Output struct for the vertex shader.
@@ -22,12 +31,13 @@ struct vertexOutput
     float3 normalWorldSpace : VAR_NORMAL;
     float2 coordsUV : TEXCOORD0;
     float4 tangentWorldSpace : VAR_TANGENT;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct fragmentOutput
 {
-    float4 normalBuffer : SV_TARGET0;
-    //float4 albedoBuffer : SV_TARGET1;
+    float4 normalBuffer : SV_TARGET1;
+    float4 albedoBuffer : SV_TARGET0;
 };
 
 float3 GetNormalTS(float2 coordsUV)
@@ -42,6 +52,8 @@ float3 GetNormalTS(float2 coordsUV)
 vertexOutput NormalsPassVertex(vertexInput input)
 {
     vertexOutput output;
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
    
 	// Transform from object space to world space.
     float3 positionWorldSpace = TransformObjectToWorld(input.positionObjectSpace);
@@ -56,17 +68,22 @@ vertexOutput NormalsPassVertex(vertexInput input)
     return output;
 }
 
-float4 NormalsPassFragment(vertexOutput input) : SV_TARGET
+fragmentOutput NormalsPassFragment(vertexOutput input) : SV_TARGET
 {
     fragmentOutput output;
     
     float3 normal = NormalTangentToWorld(GetNormalTS(input.coordsUV), input.normalWorldSpace, input.tangentWorldSpace);
     
     output.normalBuffer = float4(normal, 1.0);
-    //output.albedoBuffer = 
+
     
+    float4 textureSampleColor = SAMPLE_TEXTURE2D(_Texture, sampler_Texture, input.coordsUV);
+    float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
     
-    return float4(normal, 1.0);
+    output.albedoBuffer = textureSampleColor * baseColor;
+    
+     
+    return output;
 }
 
 #endif

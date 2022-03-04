@@ -91,9 +91,9 @@ float4 LitPassFragment(vertexOutput input) : SV_TARGET
 		
     float4 albedo = SAMPLE_TEXTURE2D(_AlbedoBuffer, sampler_AlbedoBuffer, screenSpaceVector);
 	
-    float4 color = dot(float4(1.0, 0.0, 0.7, 1.0), SAMPLE_TEXTURE2D(_NormalBuffer, sampler_NormalBuffer, screenSpaceVector));
-	
-    return color * albedo;
+    float4 color = dot(float3(-1.0, 0.3, -0.3), SAMPLE_TEXTURE2D(_NormalBuffer, sampler_NormalBuffer, screenSpaceVector).xyz);
+
+    return saturate(color * albedo);
 }
 
 #endif

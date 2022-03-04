@@ -33,7 +33,7 @@ Shader "Custom RP/Deferred"
 			
 			Pass {
 				Tags {
-					"LightMode" = "Normals"
+					"LightMode" = "Geometry"
 				}
 
 				HLSLPROGRAM

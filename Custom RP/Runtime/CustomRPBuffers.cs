@@ -24,9 +24,13 @@ public class NormalBuffer
     CommandBuffer buffer = new CommandBuffer { name = bufferName };
 
     static int normalBufferId = Shader.PropertyToID("_NormalBuffer");
-    static ShaderTagId normalsShaderTagId = new ShaderTagId("Normals");
+    static int albedoBufferId = Shader.PropertyToID("_AlbedoBuffer");
+    //static int depthBufferId = Shader.PropertyToID("_DepthBuffer");
 
-    RenderBuffer[] _mrt = new RenderBuffer[1];
+    static ShaderTagId geometryShaderTagId = new ShaderTagId("Geometry");
+
+    static RenderTargetIdentifier[] mrt = new RenderTargetIdentifier[2];
+
 
     public void Setup(ScriptableRenderContext context, CullingResults cullingResults, Camera camera)
     {
@@ -54,24 +58,21 @@ public class NormalBuffer
         ExecuteBuffer();
 
         buffer.GetTemporaryRT(normalBufferId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, RenderTextureFormat.ARGBFloat);
+        mrt[0] = new RenderTargetIdentifier(normalBufferId);
 
-        //var rt1 = buffer.GetTemporaryRT(normalBufferId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, RenderTextureFormat.ARGBFloat);
-        //var rt2 = buffer.GetTemporaryRT(camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, RenderTextureFormat.ARGBFloat);
+        buffer.GetTemporaryRT(albedoBufferId, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, RenderTextureFormat.ARGBFloat);
+        mrt[1] = new RenderTargetIdentifier(albedoBufferId);
 
-        //_mrt[0] = rt1.colorBuffer;
-
-        buffer.SetRenderTarget(normalBufferId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-        //buffer.SetRenderTarget(_mrt, rt1.depthBuffer);
+        //buffer.SetRenderTarget(normalBufferId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        buffer.SetRenderTarget(mrt, 32);
         ExecuteBuffer();
 
         buffer.ClearRenderTarget(true, false, Color.clear);
 
         ExecuteBuffer();
 
-
-
         SortingSettings sortingSettings = new SortingSettings(camera);
-        DrawingSettings drawingSettings = new DrawingSettings(normalsShaderTagId, sortingSettings);
+        DrawingSettings drawingSettings = new DrawingSettings(geometryShaderTagId, sortingSettings);
         FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.all);
 
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);

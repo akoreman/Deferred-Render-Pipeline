@@ -77,7 +77,7 @@ public class CamRenderer
     void DrawBuffers()
     {
         normalBuffer.Setup(context, cullingResults, camera);
-        albedoBuffer.Setup(context, cullingResults, camera);
+        //albedoBuffer.Setup(context, cullingResults, camera);
     }
 
     void DrawGeometry()
