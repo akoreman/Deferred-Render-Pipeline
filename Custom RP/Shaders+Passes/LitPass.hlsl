@@ -26,16 +26,9 @@ struct vertexOutput
 	float4 positionClipSpace : SV_POSITION;
 };
 
-struct fragmentOutput
-{
-	float4 normalBuffer : SV_TARGET0;
-	float4 albedoBuffer : SV_TARGET1;
-};
-
 
 vertexOutput LitPassVertex(vertexInput input)
 {
-	//Setup output struct and transfer the instance IDs.
     vertexOutput output;
 
 	float3 positionWorldSpace = TransformObjectToWorld(input.positionObjectSpace);

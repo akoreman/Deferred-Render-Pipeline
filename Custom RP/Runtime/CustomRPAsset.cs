@@ -9,10 +9,11 @@ using UnityEngine.Rendering;
 public class CustomRPAsset : RenderPipelineAsset 
 {
     [SerializeField]
+    Shader shader;
 
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRP();
+        return new CustomRP(shader);
     }
 
 }

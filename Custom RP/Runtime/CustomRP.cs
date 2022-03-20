@@ -5,8 +5,8 @@ using Unity.Collections;
 
 public class CustomRP : RenderPipeline
 {
-    CamRenderer renderer = new CamRenderer();
-
+    CamRenderer renderer;// = new CamRenderer();
+    public static Shader deferredShader;
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
@@ -17,9 +17,12 @@ public class CustomRP : RenderPipeline
         }
     }
 
-    public CustomRP()
+    public CustomRP(Shader inputShader)
     {
         GraphicsSettings.useScriptableRenderPipelineBatching = true;
+        deferredShader = inputShader;
+
+        renderer = new CamRenderer();
     }
 }
 
@@ -35,6 +38,8 @@ public class CamRenderer
 
     const string bufferName = "Render Camera";
     CommandBuffer buffer = new CommandBuffer {name = bufferName};
+
+    public Material material = new Material(CustomRP.deferredShader);
 
     public void Render (ScriptableRenderContext context, Camera camera)
     {
