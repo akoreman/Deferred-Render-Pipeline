@@ -1,13 +1,11 @@
 # Deferred Render Pipeline
 
-A deferred render pipeline using Unity3D's scriptable render pipeline. Mainly to demonstrate the fundamentals of using deferred shading and using Multiple Render Targets (MRT), for more advanced lighting/shadow techniques see the forward rendering project. This project shares some code with my forward rendering pipline project (https://github.com/akoreman/Forward-Render-Pipeline).
+A deferred render pipeline using Unity3D's scriptable render pipeline to demonstrate the fundamentals of using deferred shading and using Multiple Render Targets (MRT), for more advanced lighting/shadow techniques see the forward rendering project. This project shares some code with my forward rendering pipline project (https://github.com/akoreman/Forward-Render-Pipeline).
 
 **Currently Implemented:**
 - Using MRT to render the geometry buffers in a single pass.
 - Sampling from these buffers to calculate diffuse shading from a directional light.
-
-**To do:**
-- Use a screen-space quad for the final render.
+- Renders a screen-space triangle and sample the geometry buffer to a square of that to render the final image.
 
 # Screenshots
 
