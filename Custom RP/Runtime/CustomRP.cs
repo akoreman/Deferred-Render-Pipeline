@@ -5,7 +5,7 @@ using Unity.Collections;
 
 public class CustomRP : RenderPipeline
 {
-    CamRenderer renderer;// = new CamRenderer();
+    CamRenderer renderer;
     public static Shader deferredShader;
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
@@ -52,14 +52,8 @@ public class CamRenderer
 
         DrawBuffers();
 
-        buffer.BeginSample(bufferName);
-
         ExecuteBuffer();
-
-        buffer.EndSample(bufferName);
-
-        Setup();     
-
+  
         buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
 
         DrawGeometry();
@@ -83,23 +77,15 @@ public class CamRenderer
 
     void DrawGeometry()
     {
-        SortingSettings sortingSettings = new SortingSettings(camera);
-        
-        DrawingSettings drawingSettings = new DrawingSettings(litShaderTagId, sortingSettings)
-        {
-            perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume | PerObjectData.ReflectionProbes
-        };
-        
-        FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.all);
-        
-        context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
-                
-        context.DrawSkybox(camera);
+        // Render a screen-space triangle using the lit pass of the deferred shader.
+        buffer.DrawProcedural(
+			Matrix4x4.identity, material, 1,
+			MeshTopology.Triangles, 3
+		);
     }
 
     void Submit()
     {
-        buffer.EndSample(bufferName);
         ExecuteBuffer();
         context.Submit();
     }
