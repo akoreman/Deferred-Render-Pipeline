@@ -21,8 +21,10 @@ public class GeometryBuffer
 
     static ShaderTagId geometryShaderTagId = new ShaderTagId("Geometry");
 
-    // Create the array of RT IDs to send to the GPU as the MRTs.
+    // Create the array of RT IDs to send to the GPU as the MRT.
     static RenderTargetIdentifier[] mrt = new RenderTargetIdentifier[3];
+
+    static RenderTexture depthBuffer;
 
     public void Setup(ScriptableRenderContext context, CullingResults cullingResults, Camera camera)
     {
@@ -65,8 +67,8 @@ public class GeometryBuffer
 
         ExecuteBuffer();
 
-        // Create a render texture to use a the depth buffer.
-        var depthBuffer = RenderTexture.GetTemporary(camera.pixelWidth, camera.pixelHeight, 24);
+        // Create a render texture to use as the depth buffer.
+        depthBuffer = RenderTexture.GetTemporary(camera.pixelWidth, camera.pixelHeight, 24);
         buffer.SetRenderTarget(mrt, depthBuffer);
         buffer.ClearRenderTarget(true, false, Color.clear);
 
@@ -82,15 +84,14 @@ public class GeometryBuffer
         ExecuteBuffer();
     }
 
-
     public void Cleanup()
     {
         buffer.ReleaseTemporaryRT(normalBufferId);
         buffer.ReleaseTemporaryRT(albedoBufferId);
         buffer.ReleaseTemporaryRT(worldPositionBufferId);
+        RenderTexture.ReleaseTemporary(depthBuffer);
 
         ExecuteBuffer();
     }
-
 }
 

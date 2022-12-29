@@ -50,29 +50,23 @@ public class CamRenderer
         if (!Cull())
             return;
 
-        DrawBuffers();
-
-        ExecuteBuffer();
-  
-        buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-
-        DrawGeometry();
-        
+        Setup();
+        DrawGeometry();  
         Submit();
     }
 
     void Setup()
     {
         context.SetupCameraProperties(camera);
-        buffer.ClearRenderTarget(true, true, Color.clear);
-        buffer.BeginSample(bufferName);
 
         ExecuteBuffer();
-    }
 
-    void DrawBuffers()
-    {
         geometryBuffer.Setup(context, cullingResults, camera);
+
+        ExecuteBuffer();
+
+        buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare);
+        buffer.ClearRenderTarget(true, true, Color.clear);
     }
 
     void DrawGeometry()

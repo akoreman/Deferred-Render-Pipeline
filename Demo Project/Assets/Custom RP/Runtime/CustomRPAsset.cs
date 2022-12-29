@@ -5,7 +5,6 @@ using UnityEngine.Rendering;
 
 [CreateAssetMenu(menuName = "Rendering/Custom Render Pipeline")]
 
-
 public class CustomRPAsset : RenderPipelineAsset 
 {
     [SerializeField]
@@ -15,5 +14,4 @@ public class CustomRPAsset : RenderPipelineAsset
     {
         return new CustomRP(shader);
     }
-
 }
