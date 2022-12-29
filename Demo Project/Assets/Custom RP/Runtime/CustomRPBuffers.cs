@@ -94,4 +94,3 @@ public class GeometryBuffer
         ExecuteBuffer();
     }
 }
-

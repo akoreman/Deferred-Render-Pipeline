@@ -41,6 +41,8 @@ public class CamRenderer
 
     public Material material = new Material(CustomRP.deferredShader);
 
+    Lighting lighting = new Lighting();
+
     public void Render (ScriptableRenderContext context, Camera camera)
     {
         this.context = context;
@@ -49,6 +51,8 @@ public class CamRenderer
         // If there are no vertices within the culling volume, stop the rendering process.
         if (!Cull())
             return;
+
+        lighting.Setup(context, cullingResults);
 
         Setup();
         DrawGeometry();  

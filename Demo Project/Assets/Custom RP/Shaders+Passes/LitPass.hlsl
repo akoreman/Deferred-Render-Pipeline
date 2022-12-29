@@ -2,6 +2,8 @@
 #define CUSTOM_LIT_PASS_INCLUDED
 
 #include "../Auxiliary/Common.hlsl"
+#include "../Auxiliary/Lighting.hlsl"
+
 
 // This pass is to sample the textures and sample them to the part of a triangle.
 TEXTURE2D(_Texture);
@@ -37,7 +39,9 @@ float4 LitPassFragment(vertexInput input) : SV_TARGET
 {
     float4 albedo = SAMPLE_TEXTURE2D(_AlbedoBuffer, sampler_AlbedoBuffer, input.coordsUV);
 	
-    float4 color = dot(float3(-1.0, 0.3, -0.3), SAMPLE_TEXTURE2D(_NormalBuffer, sampler_NormalBuffer, input.coordsUV).xyz);
+    //float4 color = dot(float3(-1.0, 0.3, -0.3), SAMPLE_TEXTURE2D(_NormalBuffer, sampler_NormalBuffer, input.coordsUV).xyz);
+
+	float4 color = float4(GetLighting(SAMPLE_TEXTURE2D(_NormalBuffer, sampler_NormalBuffer, input.coordsUV).xyz),1.0f);
 
     return saturate(color * albedo);
 }
