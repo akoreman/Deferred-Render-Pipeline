@@ -4,7 +4,7 @@ A deferred render pipeline using Unity3D's scriptable render pipeline to demonst
 
 **Currently Implemented:**
 - Using MRT to render the geometry buffers in a single pass.
-- Sampling from these buffers to calculate diffuse shading from a directional light.
+- Sampling from these buffers to calculate diffuse shading from directional lights.
 - Renders a screen-space triangle and sample the geometry buffer to a square of that to render the final image.
 
 # Screenshots
